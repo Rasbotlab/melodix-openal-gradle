@@ -1,1 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "musicplayer",
+  "version": "${version}",
+  "name": "Melodix Music Player (OpenAL Patch)",
+  "description": "Melodix with OpenAL backend for Android compatibility. Patched to remove javax.sound.sampled dependency.",
+  "authors": ["distelbus-svg (original)", "OpenAL Patch"],
+  "license": "MIT",
+  "environment": "client",
+  "icon": "assets/musicplayer/icon.png",
+  "entrypoints": {
+    "client": [
+      "com.musicplayer.MusicPlayerMod"
+    ]
+  },
+  "mixins": [
+    "musicplayer.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=1.21.2",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
 
