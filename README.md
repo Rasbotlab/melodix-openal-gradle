@@ -1,62 +1,115 @@
-# Melodix OpenAL
-# (Unofficial Mod For Melodix)
+# Melodix OpenAL Patch
 
-A community-driven fork of Melodix Music Player focused on Android compatibility.
+## 🎯 Tujuan
+Patch mod **Melodix Music Player** untuk mengganti backend audio dari `javax.sound.sampled` (Java Sound API) ke **OpenAL** (LWJGL), sehingga kompatibel dengan **Android (Pojav/MJ Launcher)**.
 
-## Overview
+## 📦 File
+- `melodix-1.0.0.jar` — JAR asli (letakkan di folder `original/`)
+- `melodix-1.0.0-openal.jar` — JAR hasil patch (output)
 
-Melodix OpenAL replaces the original Java Sound backend (`javax.sound.sampled`) with Minecraft's native OpenAL audio engine.
+## 🛠️ Cara Build
 
-This allows Melodix to work on Android runtimes such as PojavLauncher and MJ Launcher, where Java Sound is unavailable.
+### Persyaratan
+- Java 21 atau lebih baru
+- Gradle (wrapper sudah include)
+- PC dengan OS Windows/Linux/Mac
 
-## Features
+### Langkah
 
-- 🎵 OpenAL audio backend
-- 📱 Android support (PojavLauncher & MJ Launcher)
-- 💻 Windows, Linux, macOS support
-- 🎧 MP3 playback
-- 🎼 WAV playback
-- 🚧 FLAC support (Work in Progress)
-- 🚧 Streaming playback
-- 🚧 Audio visualizer improvements
-- 🚧 Performance optimization for low-end devices
+1. **Install Java 21**
+   ```bash
+   # Ubuntu/Debian
+   sudo apt install openjdk-21-jdk
 
-## Project Goals
+   # Windows: Download dari https://adoptium.net/
+   # Mac: brew install openjdk@21
+   ```
 
-- Remove all `javax.sound.sampled` dependencies
-- Use Minecraft's built-in audio engine
-- Reduce memory usage
-- Improve Android compatibility
-- Keep compatibility with Fabric Minecraft
+2. **Clone/Extract project ini**
+   ```bash
+   cd melodix-openal-gradle
+   ```
 
-## Status
+3. **Letakkan JAR asli**
+   ```bash
+   mkdir -p original
+   # Copy melodix-1.0.0.jar ke folder original/
+   ```
 
-This project is currently under active development.
+4. **Build**
+   ```bash
+   ./gradlew build
+   ./build.sh
+   ```
 
-## Build
+   Atau di Windows:
+   ```cmd
+   gradlew.bat build
+   build.bat
+   ```
 
-```bash
-chmod +x build.sh
-./build.sh
+5. **Ambil hasil**
+   - File `melodix-1.0.0-openal.jar` akan muncul di root folder
+   - Copy ke `mods/` folder Minecraft
+   - Hapus JAR asli
+
+## 🔄 Perubahan
+
+### Class yang Diganti
+| Class | Perubahan |
+|-------|-----------|
+| `AudioEngine` | Hapus `SourceDataLine`, ganti dengan `OpenALAudioPlayer` |
+| `AudioEngine$PlaybackSlot` | Rewrite playback logic menggunakan OpenAL |
+| `PcmStream` | Hapus `AudioFormat`, ganti dengan parameter primitive |
+| `FullPcmDecoder` | Hapus `AudioFormat`, return `ByteBuffer` + sampleRate/channels |
+| `OpenALAudioPlayer` | **Class baru** — wrapper OpenAL |
+
+### Class yang Tetap (Tidak Diubah)
+- `MusicPlayerManager` — hanya menggunakan `AudioEngine` public API
+- `MusicPlayerScreen` — UI layer
+- `AudioVisualizerHud` — visualizer (tetap baca dari PCM buffer)
+- `SoundtrackStateManager` — vanilla music integration
+- Semua class lain yang tidak terkait audio playback
+
+## 🎵 Cara Kerja OpenAL Backend
+
+```
+MP3 File → JLayer Decoder → PCM ByteBuffer → [Split ke Visualizer] → OpenAL Buffer → OpenAL Source → Speaker
+WAV File → Parse Header → PCM ByteBuffer → [Split ke Visualizer] → OpenAL Buffer → OpenAL Source → Speaker
 ```
 
-or
+### Keuntungan
+- ✅ **PC**: LWJGL OpenAL sudah include di Minecraft
+- ✅ **Android**: Pojav/MJ Launcher punya OpenAL wrapper
+- ✅ **No javax.sound**: Hapus semua dependency ke Java Sound API
 
-```bash
-gradlew build
-```
+## ⚠️ Known Issues / Limitations
 
-## Planned
+1. **Large files**: Saat ini seluruh file di-buffer ke memory. File > 50MB mungkin crash. Solusi: streaming dengan `alSourceQueueBuffers()`.
 
-- FLAC decoder
-- AAC support
-- Better seeking
-- Gapless playback
-- Playlist improvements
-- Android optimization
-- MJ Launcher compatibility
-- PojavLauncher optimization
+2. **Seeking**: Seek diimplementasikan dengan re-decode dari posisi target. Untuk MP3 besar, ini bisa lambat.
 
-## Disclaimer
+3. **Crossfade**: Dua OpenAL source berjalan bersamaan. Volume fade via `AL_GAIN`.
 
-This project is an independent community fork and is not affiliated with the original Melodix developers.
+4. **Pitch control**: `AL_PITCH` digunakan untuk playback speed. Ini juga mengubah pitch (chipmunk effect). Untuk time-stretching tanpa pitch shift, butuh algoritma DSP tambahan.
+
+## 🐛 Troubleshooting
+
+### Build Error: "Cannot find symbol"
+- Pastikan `JAVA_HOME` di-set ke Java 21
+- Pastikan Gradle menggunakan Java 21: `./gradlew -v`
+
+### Runtime Error: "OpenAL error"
+- Pastikan driver audio PC/Android berfungsi
+- Cek log Minecraft untuk detail error
+
+### No Sound
+- Cek volume di mod settings
+- Cek apakah file MP3/WAV valid (coba di PC dulu)
+
+## 📄 License
+MIT License (sama dengan mod asli)
+
+## 🙏 Credits
+- **distelbus-svg**: Mod Melodix asli
+- **OpenAL Patch**: Konversi backend audio
