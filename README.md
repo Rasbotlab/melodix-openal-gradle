@@ -1,4 +1,5 @@
 # Melodix OpenAL Patch
+# [⚠️] This Unofficial fork for Melodix mod 
 
 ## 🎯 Tujuan
 Patch mod **Melodix Music Player** untuk mengganti backend audio dari `javax.sound.sampled` (Java Sound API) ke **OpenAL** (LWJGL), sehingga kompatibel dengan **Android (Pojav/MJ Launcher)**.
